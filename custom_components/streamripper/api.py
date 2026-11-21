@@ -63,6 +63,9 @@ class StreamRipperClient:
     async def async_get_jobs(self) -> dict:
         return await self._request("GET", "/jobs")
 
+    async def async_get_schedules(self) -> dict:
+        return await self._request("GET", "/schedules")
+
     async def async_validate(self) -> dict:
         """The status document doubles as the credential check."""
         return await self.async_get_status()

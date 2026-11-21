@@ -40,3 +40,7 @@ class StreamRipperEntity(CoordinatorEntity[StreamRipperCoordinator]):
     @property
     def _jobs_doc(self) -> dict:
         return (self.coordinator.data or {}).get("jobs") or {}
+
+    @property
+    def _schedules(self) -> list:
+        return (self.coordinator.data or {}).get("schedules") or []

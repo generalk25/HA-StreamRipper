@@ -22,12 +22,27 @@ Integration → StreamRipper) with the coordinator's host, port
 
 One device, **StreamRipper**, carrying:
 
-- **Job** — the running job's name, or `Idle`, with phase and
-  progress as attributes
+- **Job** — the running job's name, or `Idle`, with phase,
+  progress, the runner state and the passive jobs' states as
+  attributes
 - **Workers Online** — how many fleet workers are fresh, with
-  each worker's state as an attribute
-- **Worker \<name\>** — one sensor per fleet worker: its state,
-  current file, mode, and pause reason
+  each worker's state and mode as attributes
+- **Worker \<name\>** — one sensor per worker (the coordinator
+  itself included): its state, with everything the
+  coordinator reports as attributes — the current job's step
+  and file, % done, from/to codecs, active/passive mode with
+  its percent pair and effective limit, cores in the fire,
+  the efficiency index and grade, class, stream-only, holds
+  and their reasons, host vitals (CPU, temperature, memory,
+  load), scratch space, all-time GB transcoded with its
+  medal rank, claim tallies, the bench, and the mode
+  schedule (raw and as a readable line)
+- **Worker \<name\> Progress** — % done with the current job,
+  as a graphable number
+- **Worker \<name\> Throughput** — average GB/hr over the
+  trailing 24 hours of completed work
+- **Schedules** — plan runs scheduled for later: how many
+  are pending, when the next one fires, and the list
 - **Pending Steps** — plan steps waiting in the worker pool
 - **Failure Review** — genuine failures waiting for a
   dismiss/requeue decision

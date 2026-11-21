@@ -52,9 +52,19 @@ class StreamRipperCoordinator(DataUpdateCoordinator[dict]):
                 status = await self.client.async_get_status()
                 workers = await self.client.async_get_workers()
                 jobs = await self.client.async_get_jobs()
+                # Schedules ride along, but an older
+                # coordinator without the endpoint must not
+                # take the whole update down with it — the
+                # schedule entities simply read empty.
+                try:
+                    schedules_doc = await self.client.async_get_schedules()
+                    schedules = schedules_doc.get("schedules") or []
+                except StreamRipperApiError:
+                    schedules = []
         except StreamRipperApiError as exc:
             raise UpdateFailed(str(exc)) from exc
         except TimeoutError as exc:
             raise UpdateFailed(
                 "status read timed out after 30 seconds") from exc
-        return {"status": status, "workers": workers, "jobs": jobs}
+        return {"status": status, "workers": workers,
+                "jobs": jobs, "schedules": schedules}
