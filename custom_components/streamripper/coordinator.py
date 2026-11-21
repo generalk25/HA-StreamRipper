@@ -11,6 +11,7 @@ coordinator itself is unreachable, which is the truth.
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from datetime import timedelta
 
@@ -31,21 +32,29 @@ class StreamRipperCoordinator(DataUpdateCoordinator[dict]):
 
     def __init__(self, hass: HomeAssistant, client: StreamRipperClient,
                  instance_id: str) -> None:
+        # No timeout kwarg here: current Home Assistant's
+        # DataUpdateCoordinator no longer accepts one (passing
+        # it killed setup outright on HA 2026.11 — the entry
+        # never got past __init__). The 30-second budget lives
+        # around the fetch itself, in _async_update_data.
         super().__init__(
             hass,
             _LOGGER,
             name=DOMAIN,
             update_interval=timedelta(seconds=DEFAULT_SCAN_INTERVAL),
-            timeout=30,
         )
         self.client = client
         self.instance_id = instance_id
 
     async def _async_update_data(self) -> dict:
         try:
-            status = await self.client.async_get_status()
-            workers = await self.client.async_get_workers()
-            jobs = await self.client.async_get_jobs()
+            async with asyncio.timeout(30):
+                status = await self.client.async_get_status()
+                workers = await self.client.async_get_workers()
+                jobs = await self.client.async_get_jobs()
         except StreamRipperApiError as exc:
             raise UpdateFailed(str(exc)) from exc
+        except TimeoutError as exc:
+            raise UpdateFailed(
+                "status read timed out after 30 seconds") from exc
         return {"status": status, "workers": workers, "jobs": jobs}
